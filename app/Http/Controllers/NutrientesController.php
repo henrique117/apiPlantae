@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Nutrientes;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class NutrientesController extends Controller
 {
+
+    use ApiResponse;
+
     /**
      * Display a listing of the resource.
      *
@@ -15,8 +21,10 @@ class NutrientesController extends Controller
      */
     public function index()
     {
-        $mensagens = Nutrientes::all();
-        return view("restict/nutrientes", compact('nutrientes'));
+        $nutrientes = Nutrientes::select(['id', 'user_id', 'N', 'P', 'K', 'Ca', 'Mg', 'S'])
+            ->with('user:id,name')
+            ->get();
+        return $this->success($nutrientes);
     }
 
     /**
@@ -46,16 +54,21 @@ class NutrientesController extends Controller
             'S' => 'required',
         ]);
         if ($validated) {
-            $nutrientes = new Nutrientes();
-            $nutrientes->user_id = Auth::user()->id;
-            $nutrientes->N = $request->get('N');
-            $nutrientes->K = $request->get('K');
-            $nutrientes->P = $request->get('P');
-            $nutrientes->Ca = $request->get('Ca');
-            $nutrientes->Mg = $request->get('Mg');
-            $nutrientes->S = $request->get('S');
-            $nutrientes->save();
-            return redirect('nutrientes');
+            try {
+                $nutrientes = new Nutrientes();
+                $nutrientes->user_id = Auth::user()->id;
+                $nutrientes->N = $request->get('N');
+                $nutrientes->K = $request->get('K');
+                $nutrientes->P = $request->get('P');
+                $nutrientes->Ca = $request->get('Ca');
+                $nutrientes->Mg = $request->get('Mg');
+                $nutrientes->S = $request->get('S');
+                $nutrientes->save();
+
+                return $this->success($nutrientes);
+            } catch (\Throwable $th) {
+                return $this->error("Erro ao cadastrar os nutrientes, verifique as informações!!!", 401, $th->getMessage());
+            }
         }
     }
 
@@ -67,7 +80,12 @@ class NutrientesController extends Controller
      */
     public function show(Nutrientes $nutrientes)
     {
-        //
+        try {
+            $nutrientes = Nutrientes::where('id', $id)->with('topicos')->get();
+            return $this->success($nutrientes[0]);
+        } catch (\Throwable $th) {
+            return $this->error("Error", 401, $th->getMessage());
+        }
     }
 
     /**
@@ -99,7 +117,6 @@ class NutrientesController extends Controller
             'S' => 'required',
         ]);
         if ($validated) {
-            $nutrientes = new Nutrientes();
             $nutrientes->user_id = Auth::user()->id;
             $nutrientes->N = $request->get('N');
             $nutrientes->K = $request->get('K');
@@ -120,7 +137,12 @@ class NutrientesController extends Controller
      */
     public function destroy(Nutrientes $nutrientes)
     {
-        $nutrientes->delete();
-        return redirect('nutrientes');
+        try {
+            $nutrientes = Nutrientes::findOrFail($id);
+            $nutrientes->delete();
+            return $this->success($nutrientes);
+        } catch (\Throwable $th) {
+            return $this->error("Erro ao deletar nutriente", 401, $th->getMessage());
+        }
     }
 }
