@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Nutrientes;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,9 +56,12 @@ class AuthController extends Controller
             $user = User::where('email', $request['email'])->firstOrFail();
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            $nutrientes = Nutrientes::where('user_id', $user->id)->first();
+
             return $this->success([
                 'access_token' => $token,
-                'user' => $user
+                'user' => $user,
+                'nutrientes' => $nutrientes,
             ], "Login realizado com sucesso!");
 
         } catch (\Throwable $th) {
