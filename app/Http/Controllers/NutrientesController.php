@@ -25,6 +25,9 @@ class NutrientesController extends Controller
             ->with('user:id,name')
             ->where('user_id', Auth::user()->id)
             ->get();
+        if (count($nutrientes) > 0) {
+            $nutrientes = $nutrientes[0];
+        }
         return $this->success($nutrientes);
     }
 
