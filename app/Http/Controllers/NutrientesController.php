@@ -23,6 +23,7 @@ class NutrientesController extends Controller
     {
         $nutrientes = Nutrientes::select(['id', 'user_id', 'N', 'P', 'K', 'Ca', 'Mg', 'S'])
             ->with('user:id,name')
+            ->where('user_id', Auth::user()->id)
             ->get();
         return $this->success($nutrientes);
     }
@@ -55,7 +56,10 @@ class NutrientesController extends Controller
         ]);
         if ($validated) {
             try {
-                $nutrientes = new Nutrientes();
+                $nutrientes = Nutrientes::firstWhere('user_id', Auth::user()->id);
+                if (!$nutrientes) {
+                    $nutrientes = new Nutrientes();
+                }
                 $nutrientes->user_id = Auth::user()->id;
                 $nutrientes->N = $request->get('N');
                 $nutrientes->K = $request->get('K');
