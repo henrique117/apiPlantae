@@ -304,7 +304,11 @@
                         </h1>
                     </div>
                 </div>
-            </div>
+                <div>
+                    <img src="./images/frame.png" alt="">
+                    <h1>BAIXE NOSSO APLICATIVO!!!</h1>
+                </div>
+            </div> 
         </div>
     </main>
     <footer class="downFooter">
